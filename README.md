@@ -26,9 +26,9 @@ The AI Oracle Payment system underpins the financial operations of the Oracle ec
 
 This system ensures a smooth and dependable financial flow between users and the AI Oracle.
 
-### AI Oracle Payment Token
+### AI Oracle Token
 
-The AI Oracle Payment Token is the native utility token powering the AI Oracle ecosystem. Its key features include:
+The AI Oracle Token is the native utility token powering the AI Oracle ecosystem. Its key features include:
 
 1. Medium of Exchange: Serving as the primary currency for all transactions within the AI Oracle framework.
 2. Security: Utilizing blockchain technology to guarantee secure and tamper-proof transactions.
