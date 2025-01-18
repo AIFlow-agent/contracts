@@ -21,6 +21,8 @@ contract AIFlowOracle is Ownable {
         string responseS3;
     }
 
+    event AgentCreated(uint256 indexed agentId, address tokenAddress);
+
     event QueryCreated(uint256 indexed queryId, string requestS3);
 
     event QueryFulfilled(
@@ -35,7 +37,7 @@ contract AIFlowOracle is Ownable {
      */
     mapping(uint256 => Agent) private _agentOf;
 
-    uint256 _nextQueryId;
+    uint256 _nextQueryId = 1;
     /**
      * @dev `queryId` => Query
      */
@@ -67,22 +69,22 @@ contract AIFlowOracle is Ownable {
         string memory tokenUri,
         string calldata tokenName,
         string calldata tokenSymbol
-    ) external onlyOwner returns (uint256, address) {
-        uint256 agentId = _agentNft.safeMint(to, tokenUri);
+    ) external onlyOwner returns (uint256 agentId, address tokenAddress) {
+        agentId = _agentNft.safeMint(to, tokenUri);
         AIFlowAgentToken agentToken = new AIFlowAgentToken(
             address(this),
             tokenName,
             tokenSymbol
         );
 
-        address tokenAddress = address(agentToken);
+        tokenAddress = address(agentToken);
 
         _agentOf[agentId] = Agent({
             agentId: agentId,
             tokenAddress: tokenAddress
         });
 
-        return (agentId, tokenAddress);
+        emit AgentCreated(agentId, tokenAddress);
     }
 
     function mintToken(
@@ -133,13 +135,21 @@ contract AIFlowOracle is Ownable {
         emit QueryFulfilled(queryId, responseS3, consumedToken);
     }
 
-    function getQuery(uint256 queryId) external view returns (Query memory) {
-        return _queryOf[queryId];
+    function getQuery(
+        uint256 queryId
+    ) external view returns (Query memory query) {
+        query = _queryOf[queryId];
     }
 
-    function tokenOf(
+    function getAgentIdBy(
         address tokenAddress
     ) external view returns (uint256 agentId) {
-        return _tokenOf[tokenAddress];
+        agentId = _tokenOf[tokenAddress];
+    }
+
+    function getAgentBy(
+        uint256 agentId
+    ) external view returns (Agent memory agent) {
+        agent = _agentOf[agentId];
     }
 }

@@ -6,7 +6,7 @@ import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract AIFlowAgent is ERC721, ERC721URIStorage, Ownable {
-    uint256 private _nextTokenId;
+    uint256 private _nextTokenId = 1;
 
     constructor() ERC721("AI Flow Agent", "AIFA") Ownable(msg.sender) {}
 
