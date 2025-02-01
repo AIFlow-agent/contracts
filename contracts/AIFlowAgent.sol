@@ -20,6 +20,13 @@ contract AIFlowAgent is ERC721, ERC721URIStorage, Ownable {
         return tokenId;
     }
 
+    function updateTokenURI(
+        uint256 tokenId,
+        string calldata newTokenUri
+    ) external onlyOwner {
+        super._setTokenURI(tokenId, newTokenUri);
+    }
+
     function tokenURI(
         uint256 tokenId
     ) public view override(ERC721, ERC721URIStorage) returns (string memory) {

@@ -56,56 +56,29 @@ describe("AIFlowOracle", () => {
     expect(queriedAgentOwner).to.be.equals(agentOwner);
   });
 
-  it("should successfully create & fullfill the Query.", async () => {
+  it("should successfully update the agent URI", async () => {
     const { aiAgents, aiOracle } = await loadFixture(deployContracts);
-    const [deployer, agentOwner, querier] = await ethers.getSigners();
-
-    const testTokenUri = "Test token URI.";
+    const [owner, oeprator] = await ethers.getSigners();
+    const testTokenUriV1 = "Test Token URI V1";
     const testTokenName = "Test Token Name";
-    const testTokenSymbol = "TTN";
-    const createAgentResponse = await aiOracle.createAgent(
-      agentOwner.address,
-      testTokenUri,
+    const testTokenSymbol = "TTT";
+
+    await aiOracle.createAgent(
+      owner,
+      testTokenUriV1,
       testTokenName,
       testTokenSymbol
     );
-    await createAgentResponse.wait();
-    const querierAiOracle = aiOracle.connect(querier);
-    const testRequestS3 = "Test Request S3";
-    const queryResponse = await querierAiOracle.createQuery(1, testRequestS3);
-    const queryReceipt = await queryResponse.wait();
-    await expect(queryReceipt)
-      .to.emit(aiOracle, "QueryCreated")
-      .withArgs(1, testRequestS3);
 
-    const agent = await aiOracle.getAgentBy(1);
-    const agentToken = await ethers.getContractAt(
-      "AIFlowAgentToken",
-      agent.tokenAddress
-    );
+    let tokenUri = await aiAgents.tokenURI(1);
+    expect(tokenUri).to.be.equals(testTokenUriV1);
 
-    const mintTokenResponse = await aiOracle
-      .connect(agentOwner)
-      .mintToken(1, querier.address, 300);
-    await mintTokenResponse.wait();
+    const testTokenUriV2 = "Test Token URI V2";
+    await aiOracle.updateAgentURI(1, testTokenUriV2);
+    tokenUri = await aiAgents.tokenURI(1);
+    expect(tokenUri).to.be.equals(testTokenUriV2);
 
-    const querierAgentTokenBalance = await agentToken.balanceOf(
-      querier.address
-    );
-    expect(querierAgentTokenBalance).to.be.equals(300);
-
-    const aiOracleAddress = await aiOracle.getAddress();
-    const approveResponse = await agentToken
-      .connect(querier)
-      .approve(aiOracleAddress, 200);
-    await approveResponse.wait();
-
-    const testResponseS3 = "Test Response S3";
-    const consumedToken = 113;
-    const fullfillQueryResponse = await aiOracle
-      .connect(agentOwner)
-      .fullfillQuery(1, 1, testResponseS3, consumedToken);
-    const fullfillQueryReceipt = await fullfillQueryResponse.wait();
-    await expect(fullfillQueryReceipt).to.emit(aiOracle, "QueryFulfilled");
+    await expect(aiOracle.connect(oeprator).updateAgentURI(1, testTokenUriV2))
+      .to.be.rejected;
   });
 });

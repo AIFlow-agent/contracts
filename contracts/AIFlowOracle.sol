@@ -11,25 +11,7 @@ contract AIFlowOracle is Ownable {
         address tokenAddress;
     }
 
-    struct Query {
-        uint256 queryId;
-        uint256 agentId;
-        address querier;
-        bool fullfilled;
-        uint256 consumedToken;
-        string requestS3;
-        string responseS3;
-    }
-
     event AgentCreated(uint256 indexed agentId, address tokenAddress);
-
-    event QueryCreated(uint256 indexed queryId, string requestS3);
-
-    event QueryFulfilled(
-        uint256 indexed queryId,
-        string responseS3,
-        uint256 consumedToken
-    );
 
     AIFlowAgent private immutable _agentNft;
     /**
@@ -38,10 +20,6 @@ contract AIFlowOracle is Ownable {
     mapping(uint256 => Agent) private _agentOf;
 
     uint256 _nextQueryId = 1;
-    /**
-     * @dev `queryId` => Query
-     */
-    mapping(uint256 => Query) private _queryOf;
 
     /**
      * @dev `token address` => `agent id`
@@ -98,47 +76,11 @@ contract AIFlowOracle is Ownable {
         token.mint(to, amount);
     }
 
-    function createQuery(uint256 agentId, string calldata requestS3) external {
-        Agent memory agent = _agentOf[agentId];
-        require(agent.agentId != 0);
-        uint256 queryId = _nextQueryId++;
-
-        Query memory query = _queryOf[queryId];
-        query.queryId = queryId;
-        query.agentId = agent.agentId;
-        query.querier = msg.sender;
-        query.requestS3 = requestS3;
-        _queryOf[queryId] = query;
-
-        emit QueryCreated(queryId, requestS3);
-    }
-
-    function fullfillQuery(
+    function updateAgentURI(
         uint256 agentId,
-        uint256 queryId,
-        string calldata responseS3,
-        uint256 consumedToken
+        string calldata newAgentURI
     ) external onlyAgentOwner(agentId) {
-        Query memory query = _queryOf[queryId];
-        require(agentId == query.agentId);
-        query.fullfilled = true;
-        query.responseS3 = responseS3;
-        query.consumedToken = consumedToken;
-        _queryOf[queryId] = query;
-
-        address querier = query.querier;
-        Agent memory agent = _agentOf[agentId];
-        address tokenAddress = agent.tokenAddress;
-        AIFlowAgentToken token = AIFlowAgentToken(tokenAddress);
-        token.burnFrom(querier, consumedToken);
-
-        emit QueryFulfilled(queryId, responseS3, consumedToken);
-    }
-
-    function getQuery(
-        uint256 queryId
-    ) external view returns (Query memory query) {
-        query = _queryOf[queryId];
+        _agentNft.updateTokenURI(agentId, newAgentURI);
     }
 
     function getAgentIdBy(
